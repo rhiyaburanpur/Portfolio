@@ -216,21 +216,29 @@ export function initDinoGame(outerContainerId) {
             this.init();
         },
         loadSounds: function () {
+            if (IS_IOS) return;
             try {
-                if (!IS_IOS) {
-                    this.audioContext = new AudioContext();
-                    var resourceTemplate = document.getElementById(this.config.RESOURCE_TEMPLATE_ID);
-                    for (var sound in Runner.sounds) {
-                        var soundSrc = resourceTemplate.querySelector('#' + Runner.sounds[sound]).src;
-                        soundSrc = soundSrc.substr(soundSrc.indexOf(',') + 1);
+                this.audioContext = new AudioContext();
+                var resourceTemplate = document.getElementById(this.config.RESOURCE_TEMPLATE_ID);
+                if (!resourceTemplate) return;
+                for (var sound in Runner.sounds) {
+                    var audioEl = resourceTemplate.querySelector('#' + Runner.sounds[sound]);
+                    if (!audioEl || !audioEl.src) continue;
+                    var soundSrc = audioEl.src;
+                    var commaIndex = soundSrc.indexOf(',');
+                    if (commaIndex === -1) continue;
+                    soundSrc = soundSrc.substr(commaIndex + 1);
+                    try {
                         var buffer = decodeBase64ToArrayBuffer(soundSrc);
                         this.audioContext.decodeAudioData(buffer, function (index, audioData) {
                             this.soundFx[index] = audioData;
                         }.bind(this, sound));
+                    } catch (decodeErr) {
+                        continue;
                     }
                 }
             } catch (e) {
-                console.warn('[DINO] Audio init failed:', e);
+                this.audioContext = null;
             }
         },
         setSpeed: function (opt_speed) {
@@ -530,7 +538,7 @@ export function initDinoGame(outerContainerId) {
             */
         },
         playSound: function (soundBuffer) {
-            if (soundBuffer) {
+            if (soundBuffer && this.audioContext) {
                 var sourceNode = this.audioContext.createBufferSource();
                 sourceNode.buffer = soundBuffer;
                 sourceNode.connect(this.audioContext.destination);
