@@ -6,7 +6,7 @@ import Lanyard from './components/hero/Lanyard';
 import Ribbons from './components/background/Ribbons';
 import ScrollStack from './components/projects/ScrollStack';
 import InfiniteMenu from './components/skills/InfiniteMenu';
-import ContactCRT from './components/contact/ContactCRT';
+import TerminalContact from './components/contact/TerminalContact';
 import ClickSpark from './components/ui/ClickSpark';
 import FooterBlur from './components/layout/FooterBlur';
 import ChromeDinoGame from './components/hero/ChromeDinoGame';
@@ -60,7 +60,7 @@ function App() {
         </Section>
 
         <Section id="contact" title="Connect_Signal">
-          <ContactCRT />
+          <TerminalContact />
         </Section>
 
         <FooterBlur />
