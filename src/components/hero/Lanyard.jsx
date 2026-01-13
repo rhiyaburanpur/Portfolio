@@ -1,166 +1,212 @@
-import React, { useRef, useState, useMemo, useCallback } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Html, Environment, OrbitControls } from '@react-three/drei';
+/* eslint-disable react/no-unknown-property */
+import { useEffect, useRef, useState } from 'react';
+import { Canvas, extend, useFrame } from '@react-three/fiber';
+import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei';
+import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier';
+import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
+
+import cardGLB from '../../assets/lanyard/card.glb';
+import lanyardTexture from '../../assets/lanyard/dino-lanyard.png';
+import idCardFrontTexture from '../../assets/lanyard/id-card-front.png';
+import idCardBackTexture from '../../assets/lanyard/id-card-back.png';
+
 import * as THREE from 'three';
+import './Lanyard.css';
 
-// Card dimensions - VERTICAL
-const CARD_WIDTH = 2.1;
-const CARD_HEIGHT = 3.2;
+extend({ MeshLineGeometry, MeshLineMaterial });
 
-// Age Calculation
-const useAge = () => {
-    return useMemo(() => {
-        const birthDate = new Date('2006-12-05');
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        return age;
-    }, []);
-};
+export default function Lanyard({ position = [0, 0, 30], gravity = [0, -40, 0], fov = 20, transparent = true, paused = false }) {
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
-function Card({ isDragging, dragOffset }) {
-    const cardRef = useRef();
-    const [hovered, setHovered] = useState(false);
-    const age = useAge();
-
-    // Swinging animation (reduced when dragging)
-    useFrame((state) => {
-        if (cardRef.current) {
-            if (!isDragging) {
-                cardRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.08;
-                cardRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.03;
-                cardRef.current.position.x = 0;
-            } else {
-                // Follow drag with MORE responsiveness
-                cardRef.current.position.x = THREE.MathUtils.lerp(cardRef.current.position.x, dragOffset.x * 4, 0.1);
-                cardRef.current.position.y = THREE.MathUtils.lerp(cardRef.current.position.y, dragOffset.y * 4, 0.1);
-                cardRef.current.rotation.z = THREE.MathUtils.lerp(cardRef.current.rotation.z, -dragOffset.x * 0.6, 0.1);
-            }
-        }
-    });
-
-    return (
-        <group ref={cardRef} position={[0, -0.3, 0]}>
-            {/* Rope - shifted up because card is taller */}
-            <mesh position={[0, 2.1, 0]}>
-                <cylinderGeometry args={[0.03, 0.03, 1.4, 8]} />
-                <meshStandardMaterial color="#333" />
-            </mesh>
-
-            {/* Card Body */}
-            <mesh
-                onPointerOver={() => setHovered(true)}
-                onPointerOut={() => setHovered(false)}
-            >
-                <boxGeometry args={[CARD_WIDTH, CARD_HEIGHT, 0.08]} />
-                <meshStandardMaterial
-                    color={hovered ? "#6e6e6e" : "#535353"}
-                    roughness={0.3}
-                    metalness={0.7}
-                    side={THREE.DoubleSide}
-                />
-            </mesh>
-
-            {/* White Insert - Vertical */}
-            <mesh position={[0, -0.2, 0.05]}>
-                <planeGeometry args={[CARD_WIDTH * 0.85, CARD_HEIGHT * 0.65]} />
-                <meshBasicMaterial color="#f7f7f7" />
-            </mesh>
-
-            {/* PFP Placeholder - Top Center */}
-            <mesh position={[0, 0.8, 0.06]}>
-                <planeGeometry args={[0.9, 0.9]} />
-                <meshBasicMaterial color="#333" />
-            </mesh>
-
-            {/* Info Text - Using HTML for better font support and crispness */}
-            <Html
-                transform
-                position={[0, -0.4, 0.07]} // Lower half of the card
-                className="pointer-events-none"
-                occlude
-            >
-                <div className="w-[180px] flex flex-col items-center justify-center select-none bg-transparent overflow-hidden">
-                    <h1 className="font-['Press_Start_2P'] text-[#333] text-[11px] leading-tight mb-2 text-center whitespace-nowrap">
-                        RHIYA BURANPUR
-                    </h1>
-                    <p className="font-['VT323'] text-[#444] text-xl leading-none">
-                        AI & DS
-                    </p>
-                    <p className="font-['VT323'] text-[#444] text-lg leading-none mt-1">
-                        AGE: {age}
-                    </p>
-                    <div className="w-full h-[1px] bg-black/10 my-2"></div>
-                    <p className="font-['VT323'] text-[#666] text-sm leading-none tracking-widest uppercase text-center">
-                        Systems / Cloud
-                    </p>
-                </div>
-            </Html>
-        </group>
-    );
-}
-
-// Drag handler component
-function DragHandler({ onDragChange }) {
-    const { viewport, camera } = useThree();
-    const isDraggingRef = useRef(false);
-    const startPos = useRef({ x: 0, y: 0 });
-
-    const handlePointerDown = useCallback((e) => {
-        isDraggingRef.current = true;
-        startPos.current = { x: e.clientX, y: e.clientY };
-        onDragChange(true, { x: 0, y: 0 });
-        e.target.setPointerCapture(e.pointerId);
-    }, [onDragChange]);
-
-    const handlePointerMove = useCallback((e) => {
-        if (!isDraggingRef.current) return;
-        const dx = (e.clientX - startPos.current.x) / 200;
-        const dy = -(e.clientY - startPos.current.y) / 200;
-        onDragChange(true, { x: dx, y: dy });
-    }, [onDragChange]);
-
-    const handlePointerUp = useCallback((e) => {
-        isDraggingRef.current = false;
-        onDragChange(false, { x: 0, y: 0 });
-    }, [onDragChange]);
-
-    return (
-        <mesh
-            position={[0, 0, -1]}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-        >
-            <planeGeometry args={[20, 20]} />
-            <meshBasicMaterial transparent opacity={0} />
-        </mesh>
-    );
-}
-
-const Lanyard = () => {
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
-    const handleDragChange = useCallback((dragging, offset) => {
-        setIsDragging(dragging);
-        setDragOffset(offset);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const cameraPosition = isMobile ? [0, 0, 35] : position;
+    const cameraFov = isMobile ? 25 : fov;
+
     return (
-        <div className="h-full w-full cursor-grab active:cursor-grabbing">
-            <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-                <ambientLight intensity={0.7} />
-                <pointLight position={[5, 5, 5]} intensity={0.9} />
-                <DragHandler onDragChange={handleDragChange} />
-                <Card isDragging={isDragging} dragOffset={dragOffset} />
+        <div className="lanyard-wrapper">
+            <Canvas
+                camera={{ position: cameraPosition, fov: cameraFov }}
+                dpr={[1, isMobile ? 1.5 : 2]}
+                gl={{ alpha: transparent }}
+                onCreated={({ gl }) => gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)}
+            >
+                <ambientLight intensity={Math.PI} />
+                <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60} paused={paused}>
+                    <Band isMobile={isMobile} />
+                </Physics>
+                <Environment blur={0.75}>
+                    <Lightformer
+                        intensity={2}
+                        color="white"
+                        position={[0, -1, 5]}
+                        rotation={[0, 0, Math.PI / 3]}
+                        scale={[100, 0.1, 1]}
+                    />
+                    <Lightformer
+                        intensity={3}
+                        color="white"
+                        position={[-1, -1, 1]}
+                        rotation={[0, 0, Math.PI / 3]}
+                        scale={[100, 0.1, 1]}
+                    />
+                    <Lightformer
+                        intensity={3}
+                        color="white"
+                        position={[1, 1, 1]}
+                        rotation={[0, 0, Math.PI / 3]}
+                        scale={[100, 0.1, 1]}
+                    />
+                    <Lightformer
+                        intensity={10}
+                        color="white"
+                        position={[-10, 0, 14]}
+                        rotation={[0, Math.PI / 2, Math.PI / 3]}
+                        scale={[100, 10, 1]}
+                    />
+                </Environment>
             </Canvas>
         </div>
     );
-};
+}
 
-export default Lanyard;
+function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }) {
+    const band = useRef(),
+        fixed = useRef(),
+        j1 = useRef(),
+        j2 = useRef(),
+        j3 = useRef(),
+        card = useRef();
+    const vec = new THREE.Vector3(),
+        ang = new THREE.Vector3(),
+        rot = new THREE.Vector3(),
+        dir = new THREE.Vector3();
+    const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 4, linearDamping: 4 };
+    const { nodes, materials } = useGLTF(cardGLB);
+    const texture = useTexture(lanyardTexture);
+    const idCardFront = useTexture(idCardFrontTexture);
+    const idCardBack = useTexture(idCardBackTexture);
+
+    const [curve] = useState(
+        () =>
+            new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
+    );
+    const [dragged, drag] = useState(false);
+    const [hovered, hover] = useState(false);
+
+    useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
+    useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]);
+    useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1]);
+    useSphericalJoint(j3, card, [
+        [0, 0, 0],
+        [0, 1.45, 0]
+    ]);
+
+    useEffect(() => {
+        if (hovered) {
+            document.body.style.cursor = dragged ? 'grabbing' : 'grab';
+            return () => void (document.body.style.cursor = 'auto');
+        }
+    }, [hovered, dragged]);
+
+    useFrame((state, delta) => {
+        if (dragged) {
+            vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
+            dir.copy(vec).sub(state.camera.position).normalize();
+            vec.add(dir.multiplyScalar(state.camera.position.length()));
+            [card, j1, j2, j3, fixed].forEach(ref => ref.current?.wakeUp());
+            card.current?.setNextKinematicTranslation({ x: vec.x - dragged.x, y: vec.y - dragged.y, z: vec.z - dragged.z });
+        }
+        if (fixed.current) {
+            [j1, j2].forEach(ref => {
+                if (!ref.current.lerped) ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
+                const clampedDistance = Math.max(0.1, Math.min(1, ref.current.lerped.distanceTo(ref.current.translation())));
+                ref.current.lerped.lerp(
+                    ref.current.translation(),
+                    delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed))
+                );
+            });
+            curve.points[0].copy(j3.current.translation());
+            curve.points[1].copy(j2.current.lerped);
+            curve.points[2].copy(j1.current.lerped);
+            curve.points[3].copy(fixed.current.translation());
+            band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
+            ang.copy(card.current.angvel());
+            rot.copy(card.current.rotation());
+            card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z });
+        }
+    });
+
+    curve.curveType = 'chordal';
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+    return (
+        <>
+            <group position={isMobile ? [0, 4, 0] : [-2.5, 4.3, 0]}>
+                <RigidBody ref={fixed} {...segmentProps} type="fixed" />
+                <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
+                    <BallCollider args={[0.1]} />
+                </RigidBody>
+                <RigidBody position={[1, 0, 0]} ref={j2} {...segmentProps}>
+                    <BallCollider args={[0.1]} />
+                </RigidBody>
+                <RigidBody position={[1.5, 0, 0]} ref={j3} {...segmentProps}>
+                    <BallCollider args={[0.1]} />
+                </RigidBody>
+                <RigidBody position={[2, 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
+                    <CuboidCollider args={[0.8, 1.125, 0.01]} />
+                    <group
+                        scale={2.25}
+                        position={[0, -1.2, -0.05]}
+                        onPointerOver={() => hover(true)}
+                        onPointerOut={() => hover(false)}
+                        onPointerUp={e => (e.target.releasePointerCapture(e.pointerId), drag(false))}
+                        onPointerDown={e => (
+                            e.target.setPointerCapture(e.pointerId),
+                            drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())))
+                        )}
+                    >
+                        <mesh geometry={nodes.card.geometry}>
+                            <meshPhysicalMaterial
+                                map={materials.base.map}
+                                map-anisotropy={16}
+                                clearcoat={isMobile ? 0 : 1}
+                                clearcoatRoughness={0.15}
+                                roughness={0.9}
+                                metalness={0.8}
+                            />
+                        </mesh>
+                        <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />
+                        <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
+
+                        <mesh position={[0, 0.43, 0.015]} scale={[0.88, 0.88, 1]}>
+                            <planeGeometry args={[0.9, 1.4]} />
+                            <meshBasicMaterial map={idCardFront} transparent />
+                        </mesh>
+
+                        <mesh position={[0, 0.43, -0.015]} rotation={[0, Math.PI, 0]} scale={[0.88, 0.88, 1]}>
+                            <planeGeometry args={[0.9, 1.4]} />
+                            <meshBasicMaterial map={idCardBack} transparent />
+                        </mesh>
+                    </group>
+                </RigidBody>
+            </group>
+            <mesh ref={band}>
+                <meshLineGeometry />
+                <meshLineMaterial
+                    color="white"
+                    depthTest={false}
+                    resolution={isMobile ? [1000, 2000] : [1000, 1000]}
+                    useMap
+                    map={texture}
+                    repeat={[-4, 1]}
+                    lineWidth={1}
+                />
+            </mesh>
+        </>
+    );
+}

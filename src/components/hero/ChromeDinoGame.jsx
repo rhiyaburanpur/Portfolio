@@ -41,7 +41,7 @@ const ChromeDinoGame = () => {
     return (
         <div
             id="dino-game-root"
-            className="w-full h-full relative bg-[#f7f7f7] overflow-hidden"
+            className="w-full h-full relative bg-transparent overflow-hidden"
             tabIndex={0}
             onClick={handleWrapperClick}
             style={{ outline: 'none', cursor: 'pointer', zIndex: 10 }}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const NavItem = ({ label, href, active }) => (
     <a
@@ -18,13 +18,45 @@ const NavItem = ({ label, href, active }) => (
 );
 
 const GooeyNav = () => {
+    const [activeSection, setActiveSection] = useState('hero');
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const sections = ['hero', 'projects', 'skills', 'contact'];
+            const scrollPosition = window.scrollY + 150;
+
+            for (const sectionId of sections) {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    const { offsetTop, offsetHeight } = element;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                        setActiveSection(sectionId);
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        if (window.location.hash === '' || window.location.hash === '#') {
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            }, 100);
+        }
+    }, []);
+
     return (
         <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-40 bg-[#f7f7f7]/90 backdrop-blur-sm border-2 border-[#535353] p-1 shadow-[4px_4px_0px_#535353]">
             <ul className="flex items-center gap-2">
-                <li><NavItem label="Home" href="#hero" active /></li>
-                <li><NavItem label="Projects" href="#projects" /></li>
-                <li><NavItem label="Skills" href="#skills" /></li>
-                <li><NavItem label="Contact" href="#contact" /></li>
+                <li><NavItem label="Home" href="#hero" active={activeSection === 'hero'} /></li>
+                <li><NavItem label="Projects" href="#projects" active={activeSection === 'projects'} /></li>
+                <li><NavItem label="Skills" href="#skills" active={activeSection === 'skills'} /></li>
+                <li><NavItem label="Contact" href="#contact" active={activeSection === 'contact'} /></li>
             </ul>
         </nav>
     );

@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-press: 'Press Start 2P', system-ui;
   --font-vt323: 'VT323', monospace;
@@ -16,6 +18,10 @@
   margin: 0;
   overflow-x: hidden;
   -webkit-font-smoothing: none;
+}
+
+html {
+  scroll-behavior: smooth;
   /* Crucial for pixel art crispness */
 }
 
@@ -77,5 +83,36 @@
 
   100% {
     top: 105%;
+  }
+}
+
+@keyframes cursor-blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  51% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes v-blink {
+
+  0%,
+  50% {
+    opacity: 0.6;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
   }
 }

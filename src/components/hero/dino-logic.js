@@ -345,6 +345,9 @@ export function initDinoGame(outerContainerId) {
                 var now = getTimeStamp();
                 var deltaTime = now - (this.time || now);
                 this.time = now;
+                if (deltaTime > 100) {
+                    deltaTime = 16;
+                }
                 if (this.activated) {
                     this.clearCanvas();
                     if (this.tRex.jumping) {
@@ -741,7 +744,8 @@ export function initDinoGame(outerContainerId) {
             },
             update: function (deltaTime, speed) {
                 if (!this.remove) {
-                    this.xPos -= Math.floor((speed * FPS / 1000) * deltaTime);
+                    var movement = (speed * FPS / 1000) * deltaTime;
+                    this.xPos -= movement < 1 ? Math.ceil(movement) : Math.floor(movement);
                     this.draw();
                     if (!this.isVisible()) {
                         this.remove = true;
