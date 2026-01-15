@@ -13,12 +13,16 @@ const TerminalContact = () => {
     const inputRef = useRef(null);
     const historyEndRef = useRef(null);
     const audioContextRef = useRef(null);
+    const isInitialMount = useRef(true);
 
     const PROMPT = 'rhiya@portfolio:~$ ';
 
-    // Auto-scroll to bottom when history updates
     useEffect(() => {
-        historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        historyEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, [history]);
 
     // Focus input on click anywhere in terminal
@@ -266,7 +270,6 @@ const TerminalContact = () => {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     className="w-full bg-transparent text-[#F7F7F7] outline-none border-none font-['Press_Start_2P'] text-[10px] sm:text-xs caret-transparent"
-                                    autoFocus
                                     autoComplete="off"
                                     spellCheck="false"
                                 />

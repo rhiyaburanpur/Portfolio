@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
 import GooeyNav from './components/ui/GooeyNav';
@@ -10,8 +10,8 @@ import TerminalContact from './components/contact/TerminalContact';
 import ClickSpark from './components/ui/ClickSpark';
 import FooterBlur from './components/layout/FooterBlur';
 import ChromeDinoGame from './components/hero/ChromeDinoGame';
+import SplashScreen from './components/ui/SplashScreen';
 
-// Placeholder sections
 const Section = ({ id, title, height = "min-h-screen", children, className = "" }) => (
   <section id={id} className={`w-full ${height} flex flex-col items-center justify-center relative border-b-2 border-dashed border-[#535353]/20 dark:border-[#f7f7f7]/20 ${className}`}>
     {title && <h1 className="font-['Press_Start_2P'] text-lg sm:text-xl md:text-2xl text-[#535353] dark:text-[#f7f7f7] text-center mb-8 md:mb-12 z-10 px-4">{title}</h1>}
@@ -20,36 +20,61 @@ const Section = ({ id, title, height = "min-h-screen", children, className = "" 
 );
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
     <ThemeProvider>
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <Layout>
         <ClickSpark />
         <GooeyNav />
 
-        {/* Hero Section - Split Screen (Stacked on Mobile) */}
-        <section id="hero" className="w-full min-h-screen flex flex-col lg:flex-row border-b-2 border-dashed border-[#535353]/20 dark:border-[#f7f7f7]/20 relative pt-16 md:pt-20">
+        {/* Hero Section - Layered Layout */}
+        <section id="hero" className="w-full h-screen relative overflow-hidden border-b-2 border-dashed border-[#535353]/20 dark:border-[#f7f7f7]/20">
 
-          {/* Left: Lanyard / Info - Takes full width on mobile, 40% on desktop */}
-          <div className="relative w-full lg:w-[40%] min-h-[50vh] lg:min-h-full flex flex-col items-center justify-center p-4 md:p-8 lg:border-r-2 border-[#535353]/10 dark:border-[#f7f7f7]/10 overflow-hidden">
-            <h1 className="font-['Press_Start_2P'] text-base sm:text-lg md:text-xl lg:text-2xl text-[#535353] dark:text-[#f7f7f7] text-center mb-4 z-10 leading-tight break-words max-w-full px-2">
-              &gt; RHIYA_BURANPUR<span className="animate-pulse">_</span>
-            </h1>
-            <div className="w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] bg-transparent relative z-10 cursor-grab active:cursor-grabbing">
-              <Lanyard />
-            </div>
-            <div className="mt-4 md:mt-8 font-['VT323'] text-lg md:text-xl text-[#535353] dark:text-[#f7f7f7] text-center">
-              <p>Systems | Cloud | AI</p>
-              <p className="text-xs md:text-sm opacity-60 mt-2">SCROLL_DOWN()</p>
+          {/* Layer 0: Lanyard Background - Full Screen */}
+          <div className="absolute inset-0 z-0">
+            <Lanyard position={[0, 0, 20]} gravity={[0, -40, 0]} transparent={true} fov={15} paused={showSplash} />
+          </div>
+
+          {/* Layer 1: Text Content - Bottom Right on Desktop */}
+          <div className="hidden lg:block absolute bottom-32 right-0 z-10 pointer-events-none p-8 md:p-16">
+            <div className="pointer-events-auto text-right pr-4 md:pr-12">
+              <h1 className="font-['Press_Start_2P'] text-base sm:text-lg md:text-xl lg:text-2xl text-[#535353] dark:text-[#f7f7f7] mb-4 leading-tight break-words">
+                &gt; RHIYA_BURANPUR<span className="animate-[cursor-blink_1s_ease-out_infinite]">_</span>
+              </h1>
+              <div className="font-['VT323'] text-lg md:text-xl text-[#535353] dark:text-[#f7f7f7]">
+                <p>Systems | Cloud | AI</p>
+              </div>
             </div>
           </div>
 
-          {/* Right: Dino Game - Takes full width on mobile, 60% on desktop */}
-          <div className="relative w-full lg:w-[60%] h-[50vh] lg:h-auto lg:min-h-full bg-[#f7f7f7] dark:bg-[#1a1a1a]">
+          {/* Layer 1 Mobile: Text Content - Bottom Left on Mobile */}
+          <div className="lg:hidden absolute bottom-24 left-0 z-10 pointer-events-none p-8">
+            <div className="pointer-events-auto pl-4">
+              <h1 className="font-['Press_Start_2P'] text-base sm:text-lg text-[#535353] dark:text-[#f7f7f7] mb-4 leading-tight break-words">
+                &gt; RHIYA_BURANPUR<span className="animate-[cursor-blink_1s_ease-out_infinite]">_</span>
+              </h1>
+              <div className="font-['VT323'] text-lg text-[#535353] dark:text-[#f7f7f7]">
+                <p>Systems | Cloud | AI</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Layer 2: Dino Game - Overlay Right - Hidden on mobile */}
+          <div className="hidden lg:flex absolute top-1/2 right-0 -translate-y-1/2 lg:w-[50%] lg:h-[60%] z-20 pointer-events-auto items-center justify-center pr-4">
             <ChromeDinoGame />
           </div>
+
+          {/* Scroll Indicator */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center gap-1">
+            <p className="font-['VT323'] text-[#535353] dark:text-[#f7f7f7] text-xs md:text-sm opacity-60">SCROLL_DOWN()</p>
+            <span className="font-['VT323'] text-[#535353] dark:text-[#f7f7f7] text-2xl opacity-60 animate-[v-blink_1s_step-end_infinite]">⌄</span>
+          </div>
+
         </section>
 
-        <Section id="projects" title="Featured_Projects" height="min-h-auto">
+        <Section id="projects" title="Featured_Projects" height="min-h-auto" className="pt-16 md:pt-24">
           <ScrollStack />
         </Section>
 
