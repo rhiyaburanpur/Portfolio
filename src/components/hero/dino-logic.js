@@ -13,9 +13,17 @@ export function initDinoGame(outerContainerId) {
     * @export
     */
     function Runner(outerContainerId, opt_config) {
-        // Singleton
+        // Singleton - but check if the old instance is attached to a detached canvas
         if (Runner.instance_) {
-            return Runner.instance_;
+            var oldContainer = Runner.instance_.outerContainerEl;
+            // Check if the old container is still in the DOM
+            if (oldContainer && document.body.contains(oldContainer)) {
+                return Runner.instance_;
+            } else {
+                // Old instance is attached to a detached DOM element - destroy it
+                console.log('[DINO] Destroying stale instance attached to detached DOM');
+                Runner.instance_.destroy();
+            }
         }
         Runner.instance_ = this;
         this.outerContainerEl = document.querySelector(outerContainerId);
