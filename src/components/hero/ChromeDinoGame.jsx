@@ -21,8 +21,13 @@ const ChromeDinoGame = () => {
 
         return () => {
             clearTimeout(timer);
+            // Clean up the local instance if it exists
             if (runnerInstance && runnerInstance.destroy) {
                 runnerInstance.destroy();
+            }
+            // Also clean up any global singleton that might exist (belt and suspenders)
+            if (window.Runner && window.Runner.instance_ && window.Runner.instance_.destroy) {
+                window.Runner.instance_.destroy();
             }
             if (window.dinoRunner === runnerInstance) window.dinoRunner = null;
             initializedRef.current = false;
