@@ -7,15 +7,20 @@ const TerminalContact = () => {
         { type: 'system', text: '' },
     ]);
     const [input, setInput] = useState('');
-    const [contactStep, setContactStep] = useState(null); // null | 'name' | 'email' | 'message'
-    const [contactData, setContactData] = useState({ name: '', email: '', message: '' });
 
     const inputRef = useRef(null);
     const historyEndRef = useRef(null);
-    const audioContextRef = useRef(null);
     const isInitialMount = useRef(true);
 
     const PROMPT = 'rhiya@portfolio:~$ ';
+
+    // Social media links configuration
+    const socialLinks = [
+        { name: 'GitHub', url: 'https://github.com/rhiyaburanpur', icon: '◆' },
+        { name: 'LinkedIn', url: 'https://www.linkedin.com/in/rhiya-k-buranpur/', icon: '◆' },
+        { name: 'Email', url: 'mailto:rhiyaburanpur@gmail.com', icon: '◆' },
+        { name: 'Twitter', url: 'https://x.com/rhiya_buranpur', icon: '◆' },
+    ];
 
     useEffect(() => {
         if (isInitialMount.current) {
@@ -30,38 +35,6 @@ const TerminalContact = () => {
         inputRef.current?.focus();
     };
 
-    // Play retro success sound using Web Audio API
-    const playSuccessSound = () => {
-        try {
-            if (!audioContextRef.current) {
-                audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            const ctx = audioContextRef.current;
-
-            // Create a retro "Game Over" style sound sequence
-            const playTone = (freq, start, duration) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.1, ctx.currentTime + start);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + start + duration);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(ctx.currentTime + start);
-                osc.stop(ctx.currentTime + start + duration);
-            };
-
-            // Victory jingle: ascending notes
-            playTone(523, 0, 0.15);    // C5
-            playTone(659, 0.15, 0.15); // E5
-            playTone(784, 0.3, 0.15);  // G5
-            playTone(1047, 0.45, 0.3); // C6
-        } catch (e) {
-            console.log('Audio not available');
-        }
-    };
-
     // Command handlers
     const commands = {
         help: () => [
@@ -69,7 +42,7 @@ const TerminalContact = () => {
             { type: 'output', text: '  help    - Show this help message' },
             { type: 'output', text: '  ls      - List featured projects' },
             { type: 'output', text: '  about   - Display bio' },
-            { type: 'output', text: '  contact - Send a message' },
+            { type: 'output', text: '  contact - Show social links' },
             { type: 'output', text: '  clear   - Clear terminal' },
             { type: 'output', text: '' },
         ],
@@ -93,65 +66,23 @@ const TerminalContact = () => {
             { type: 'output', text: '' },
         ],
 
-        contact: () => {
-            setContactStep('name');
-            return [
-                { type: 'system', text: '> INITIATING CONTACT SEQUENCE...' },
-                { type: 'prompt', text: '> Enter your name:' },
-            ];
-        },
+        contact: () => [
+            { type: 'system', text: '> LOADING CONTACT_INFO.exe...' },
+            { type: 'success', text: '> ★★★ CONNECT WITH ME ★★★' },
+            { type: 'output', text: '  --------------------------------' },
+            ...socialLinks.map(link => ({
+                type: 'link',
+                text: `  ${link.icon} ${link.name}`,
+                url: link.url,
+            })),
+            { type: 'output', text: '  --------------------------------' },
+            { type: 'output', text: '' },
+        ],
 
         clear: () => {
             setHistory([]);
             return [];
         },
-    };
-
-    // Handle contact flow steps
-    const handleContactStep = (value) => {
-        let newHistory = [];
-
-        switch (contactStep) {
-            case 'name':
-                setContactData(prev => ({ ...prev, name: value }));
-                newHistory = [
-                    { type: 'input', text: value },
-                    { type: 'prompt', text: '> Enter your email:' },
-                ];
-                setContactStep('email');
-                break;
-
-            case 'email':
-                setContactData(prev => ({ ...prev, email: value }));
-                newHistory = [
-                    { type: 'input', text: value },
-                    { type: 'prompt', text: '> Enter your message:' },
-                ];
-                setContactStep('message');
-                break;
-
-            case 'message':
-                const finalData = { ...contactData, message: value };
-                setContactData({ name: '', email: '', message: '' });
-
-                // Log data (Firebase integration placeholder)
-                console.log('Contact submission:', finalData);
-
-                newHistory = [
-                    { type: 'input', text: value },
-                    { type: 'system', text: '> TRANSMITTING...' },
-                    { type: 'success', text: '> MESSAGE SAVED TO HIGH SCORE BOARD' },
-                    { type: 'success', text: '> ★★★ TRANSMISSION COMPLETE ★★★' },
-                    { type: 'output', text: '' },
-                ];
-                setContactStep(null);
-
-                // Play success sound after a brief delay
-                setTimeout(playSuccessSound, 300);
-                break;
-        }
-
-        return newHistory;
     };
 
     // Process command input
@@ -163,23 +94,18 @@ const TerminalContact = () => {
 
         let newEntries = [];
 
-        // If in contact flow
-        if (contactStep) {
-            newEntries = handleContactStep(trimmedInput);
+        // Add user command to history
+        newEntries.push({ type: 'command', text: `${PROMPT}${trimmedInput}` });
+
+        const cmd = trimmedInput.toLowerCase();
+
+        if (commands[cmd]) {
+            const result = commands[cmd]();
+            newEntries = [...newEntries, ...result];
         } else {
-            // Add user command to history
-            newEntries.push({ type: 'command', text: `${PROMPT}${trimmedInput}` });
-
-            const cmd = trimmedInput.toLowerCase();
-
-            if (commands[cmd]) {
-                const result = commands[cmd]();
-                newEntries = [...newEntries, ...result];
-            } else {
-                newEntries.push({ type: 'error', text: `> Command not found: ${trimmedInput}` });
-                newEntries.push({ type: 'output', text: '> Type "help" for available commands' });
-                newEntries.push({ type: 'output', text: '' });
-            }
+            newEntries.push({ type: 'error', text: `> Command not found: ${trimmedInput}` });
+            newEntries.push({ type: 'output', text: '> Type "help" for available commands' });
+            newEntries.push({ type: 'output', text: '' });
         }
 
         setHistory(prev => [...prev, ...newEntries]);
@@ -193,17 +119,13 @@ const TerminalContact = () => {
             case 'success': return 'text-green-400';
             case 'system': return 'text-cyan-400';
             case 'prompt': return 'text-yellow-400';
+            case 'link': return 'text-cyan-300 hover:text-cyan-100';
             default: return 'text-[#F7F7F7]';
         }
     };
 
-    // Get current prompt based on state
-    const getCurrentPrompt = () => {
-        if (contactStep === 'name') return '> name: ';
-        if (contactStep === 'email') return '> email: ';
-        if (contactStep === 'message') return '> message: ';
-        return PROMPT;
-    };
+    // Get current prompt
+    const getCurrentPrompt = () => PROMPT;
 
     return (
         <div className="relative w-full max-w-3xl mx-auto p-2 sm:p-4">
@@ -254,7 +176,19 @@ const TerminalContact = () => {
                                     key={index}
                                     className={`${getColorClass(entry.type)} leading-relaxed whitespace-pre-wrap break-words`}
                                 >
-                                    {entry.text}
+                                    {entry.type === 'link' ? (
+                                        <a
+                                            href={entry.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hover:underline hover:text-cyan-100 transition-colors cursor-pointer"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {entry.text}
+                                        </a>
+                                    ) : (
+                                        entry.text
+                                    )}
                                 </div>
                             ))}
                             <div ref={historyEndRef} />
