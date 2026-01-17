@@ -1,5 +1,4 @@
-
-export function initDinoGame(outerContainerId) {
+﻿export function initDinoGame(outerContainerId) {
     // Copyright (c) 2014 The Chromium Authors. All rights reserved.
     // Use of this source code is governed by a BSD-style license that can be
     // found in the LICENSE file.
@@ -322,8 +321,25 @@ export function initDinoGame(outerContainerId) {
                 this.tRex.playingIntro = true;
                 var keyframes = '@-webkit-keyframes intro { from { width:' + Trex.config.WIDTH + 'px } to { width: ' + this.dimensions.WIDTH + 'px } }';
                 try { document.styleSheets[0].insertRule(keyframes, 0); } catch (e) { }
-                this.containerEl.addEventListener(Runner.events.ANIM_END, this.startGame.bind(this));
+
+                // Bind startGame for reuse
+                var startGameBound = this.startGame.bind(this);
+
+                // Cross-browser animation end events
+                this.containerEl.addEventListener('animationend', startGameBound);
+                this.containerEl.addEventListener('webkitAnimationEnd', startGameBound);
+
+                // Failsafe: Ensure startGame is called even if animation events don't fire
+                // This prevents the game from being stuck with playingIntro = true
+                setTimeout(function () {
+                    if (this.playingIntro) {
+                        console.log('[DINO] Failsafe triggered - forcing startGame');
+                        this.startGame();
+                    }
+                }.bind(this), 500);
+
                 this.containerEl.style.webkitAnimation = 'intro .4s ease-out 1 both';
+                this.containerEl.style.animation = 'intro .4s ease-out 1 both';
                 this.containerEl.style.width = this.dimensions.WIDTH + 'px';
                 if (this.touchController) {
                     this.outerContainerEl.appendChild(this.touchController);
@@ -369,7 +385,7 @@ export function initDinoGame(outerContainerId) {
                     if (this.playingIntro) {
                         this.horizon.update(0, this.currentSpeed, hasObstacles);
                     } else {
-                        deltaTime = !this.started ? 0 : deltaTime;
+                        // Always use actual deltaTime when activated - the started flag race condition was causing static obstacles
                         this.horizon.update(deltaTime, this.currentSpeed, hasObstacles);
                     }
                     var collision = hasObstacles && checkForCollision(this.horizon.obstacles[0], this.tRex);
@@ -1205,6 +1221,7 @@ export function initDinoGame(outerContainerId) {
         this.cloudSpeed = this.config.BG_CLOUD_SPEED;
         this.horizonImg = images.HORIZON;
         this.horizonLine = null;
+        this.runningTime = 0; // Initialize runningTime to prevent NaN
         this.obstacleImgs = {
             CACTUS_SMALL: images.CACTUS_SMALL,
             CACTUS_LARGE: images.CACTUS_LARGE
@@ -1276,6 +1293,7 @@ export function initDinoGame(outerContainerId) {
         reset: function () {
             this.obstacles = [];
             this.horizonLine.reset();
+            this.runningTime = 0; // Reset runningTime on game restart
         },
         resize: function (width, height) {
             this.canvas.width = width;
