@@ -11,6 +11,7 @@ import ClickSpark from './components/ui/ClickSpark';
 import FooterBlur from './components/layout/FooterBlur';
 import ChromeDinoGame from './components/hero/ChromeDinoGame';
 import SplashScreen from './components/ui/SplashScreen';
+import MobileHero from './components/hero/MobileHero';
 
 const Section = ({ id, title, height = "min-h-screen", children, className = "" }) => (
   <section id={id} className={`w-full ${height} flex flex-col items-center justify-center relative border-b-2 border-dashed border-[#535353]/20 dark:border-[#f7f7f7]/20 ${className}`}>
@@ -29,8 +30,11 @@ function App() {
         <ClickSpark />
         <GooeyNav />
 
-        {/* Hero Section - Layered Layout */}
-        <section id="hero" className="w-full h-screen relative overflow-hidden border-b-2 border-dashed border-[#535353]/20 dark:border-[#f7f7f7]/20">
+        {/* Mobile Hero - Lightweight alternative for small screens */}
+        <MobileHero />
+
+        {/* Desktop Hero Section - Layered Layout (hidden on mobile) */}
+        <section id="hero" className="w-full h-screen hidden lg:flex relative overflow-hidden border-b-2 border-dashed border-[#535353]/20 dark:border-[#f7f7f7]/20">
 
           {/* Layer 0: Lanyard Background - Full Screen */}
           <div className="absolute inset-0 z-0">
@@ -38,12 +42,12 @@ function App() {
           </div>
 
           {/* Layer 1: Text Content - Bottom Right on Desktop */}
-          <div className="hidden lg:block absolute bottom-32 right-0 z-10 pointer-events-none p-8 md:p-16">
-            <div className="pointer-events-auto text-right pr-4 md:pr-12">
-              <h1 className="font-['Press_Start_2P'] text-base sm:text-lg md:text-xl lg:text-2xl text-[#535353] dark:text-[#f7f7f7] mb-4 leading-tight break-words">
+          <div className="hidden lg:block absolute bottom-24 right-0 z-30 pointer-events-none p-8 xl:p-16 max-w-[45%]">
+            <div className="pointer-events-auto text-right pr-4 xl:pr-12">
+              <h1 className="font-['Press_Start_2P'] text-sm lg:text-base xl:text-xl 2xl:text-2xl text-[#535353] dark:text-[#f7f7f7] mb-4 leading-tight break-words">
                 &gt; RHIYA_BURANPUR<span className="animate-[cursor-blink_1s_ease-out_infinite]">_</span>
               </h1>
-              <div className="font-['VT323'] text-lg md:text-xl text-[#535353] dark:text-[#f7f7f7]">
+              <div className="font-['VT323'] text-lg xl:text-xl text-[#535353] dark:text-[#f7f7f7]">
                 <p>Systems | Cloud | AI</p>
               </div>
             </div>
@@ -61,8 +65,8 @@ function App() {
             </div>
           </div>
 
-          {/* Layer 2: Dino Game - Overlay Right - Hidden on mobile */}
-          <div className="hidden lg:flex absolute top-1/2 right-0 -translate-y-1/2 lg:w-[50%] lg:h-[60%] z-20 pointer-events-auto items-center justify-center pr-4">
+          {/* Layer 2: Dino Game - Centered Right - Hidden on mobile */}
+          <div className="hidden lg:flex absolute top-[35%] right-4 -translate-y-1/2 w-[45%] h-[50%] z-20 pointer-events-auto items-center justify-center">
             <ChromeDinoGame />
           </div>
 
