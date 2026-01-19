@@ -20,9 +20,9 @@ const projects = [
     {
         title: "Go Distributed Crawler",
         category: "Systems Programming",
-        tech: ["Go", "Concurrency"],
-        description: "High-performance concurrent web crawler core emphasizing BFS and clean data management.",
-        status: "Phase 1 Completed",
+        tech: ["Go", "Redis", "PostgreSQL", "Docker"],
+        description: "A high-performance, scalable, and fault-tolerant web crawler built with Go.",
+        status: "Completed",
         link: "https://github.com/rhiyaburanpur/go-distributed-crawler"
     },
     {
