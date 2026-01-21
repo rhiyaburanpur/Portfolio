@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
             {/* Dark Mode Toggle */}
             <button
                 onClick={toggleDarkMode}
-                className={`fixed top-6 right-6 z-40 p-2 border-2 ${darkMode ? 'border-[#f7f7f7] text-[#f7f7f7]' : 'border-[#535353] text-[#535353]'} font-['Press_Start_2P'] text-xs hover:bg-[#535353] hover:text-[#f7f7f7] transition-none shadow-[2px_2px_0px_currentColor] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]`}
+                className={`fixed top-6 right-[18px] z-40 p-2 border-2 ${darkMode ? 'border-[#f7f7f7] text-[#f7f7f7]' : 'border-[#535353] text-[#535353]'} font-['Press_Start_2P'] text-xs hover:bg-[#535353] hover:text-[#f7f7f7] transition-none shadow-[2px_2px_0px_currentColor] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]`}
             >
                 {darkMode ? 'LIGHT' : 'DARK'}
             </button>

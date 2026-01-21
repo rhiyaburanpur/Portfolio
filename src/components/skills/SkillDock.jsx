@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dock, DockIcon } from '../ui/Dock';
-import { Brain, Database, Server, Code } from 'lucide-react';
+
+// Custom SVG icon imports
+import aiIcon from '../../assets/Skills-Dock/AI.svg';
+import dataIcon from '../../assets/Skills-Dock/data.svg';
+import systemsIcon from '../../assets/Skills-Dock/systems.svg';
+import coreIcon from '../../assets/Skills-Dock/core.svg';
 
 // Skill categories data
 const skillCategories = [
     {
         id: 'ai',
         title: 'AI & GENERATIVE AI',
-        icon: Brain,
+        icon: aiIcon,
         skills: [
             'LLMs & Transformers',
             'Prompt Engineering',
@@ -19,7 +24,7 @@ const skillCategories = [
     {
         id: 'data',
         title: 'DATA ENGINEERING',
-        icon: Database,
+        icon: dataIcon,
         skills: [
             'Apache Spark',
             'Oracle SQL & PL/SQL',
@@ -30,7 +35,7 @@ const skillCategories = [
     {
         id: 'backend',
         title: 'SYSTEMS & BACKEND',
-        icon: Server,
+        icon: systemsIcon,
         skills: [
             'Go (Golang) & Concurrency',
             'Docker & DevOps',
@@ -41,7 +46,7 @@ const skillCategories = [
     {
         id: 'web',
         title: 'CORE & WEB',
-        icon: Code,
+        icon: coreIcon,
         skills: [
             'Python & Scripting',
             'React 19 & Tailwind',
@@ -97,19 +102,20 @@ const SkillDock = () => {
             {/* Dock Navigation */}
             <div className="mt-8">
                 <Dock>
-                    {skillCategories.map((category) => {
-                        const IconComponent = category.icon;
-                        return (
-                            <DockIcon
-                                key={category.id}
-                                isActive={activeCategory === category.id}
-                                onClick={() => setActiveCategory(category.id)}
-                                title={category.title}
-                            >
-                                <IconComponent className="w-full h-full" strokeWidth={1.5} />
-                            </DockIcon>
-                        );
-                    })}
+                    {skillCategories.map((category) => (
+                        <DockIcon
+                            key={category.id}
+                            isActive={activeCategory === category.id}
+                            onClick={() => setActiveCategory(category.id)}
+                            title={category.title}
+                        >
+                            <img
+                                src={category.icon}
+                                alt={category.title}
+                                className="w-full h-full object-contain p-1"
+                            />
+                        </DockIcon>
+                    ))}
                 </Dock>
             </div>
 
