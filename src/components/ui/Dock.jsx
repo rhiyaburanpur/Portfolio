@@ -11,7 +11,7 @@ export const Dock = ({ children, className = '' }) => {
         <motion.div
             onMouseMove={(e) => mouseX.set(e.pageX)}
             onMouseLeave={() => mouseX.set(Infinity)}
-            className={`flex items-center justify-center gap-4 px-4 py-2 bg-[#535353]/90 border border-[#f7f7f7]/20 rounded-2xl backdrop-blur-sm ${className}`}
+            className={`flex items-center justify-center gap-5 px-5 py-3 bg-[#535353]/90 border border-[#f7f7f7]/20 rounded-2xl backdrop-blur-sm ${className}`}
         >
             {React.Children.map(children, (child) =>
                 React.isValidElement(child)
@@ -40,8 +40,8 @@ export const DockIcon = ({
         return val - bounds.x - bounds.width / 2;
     });
 
-    // Map distance to icon width: closer = larger
-    const widthSync = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
+    // Map distance to icon width: closer = larger (56px base, 100px magnified)
+    const widthSync = useTransform(distance, [-180, 0, 180], [56, 100, 56]);
 
     // Apply spring physics for smooth animation
     const width = useSpring(widthSync, {
@@ -66,7 +66,7 @@ export const DockIcon = ({
       `}
             whileTap={{ scale: 0.95 }}
         >
-            <div className={`w-1/2 h-1/2 flex items-center justify-center ${isActive ? 'text-[#535353]' : ''}`}>
+            <div className={`w-3/5 h-3/5 flex items-center justify-center ${isActive ? 'text-[#535353]' : ''}`}>
                 {children}
             </div>
         </motion.button>
