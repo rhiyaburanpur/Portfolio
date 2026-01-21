@@ -5,7 +5,7 @@ import GooeyNav from './components/ui/GooeyNav';
 import Lanyard from './components/hero/Lanyard';
 import Ribbons from './components/background/Ribbons';
 import ScrollStack from './components/projects/ScrollStack';
-import InfiniteMenu from './components/skills/InfiniteMenu';
+import SkillDock from './components/skills/SkillDock';
 import TerminalContact from './components/contact/TerminalContact';
 import ClickSpark from './components/ui/ClickSpark';
 import FooterBlur from './components/layout/FooterBlur';
@@ -78,10 +78,8 @@ function App() {
           <ScrollStack />
         </Section>
 
-        <Section id="skills" title="" height="min-h-[40vh] md:min-h-[50vh]" className="bg-[#535353] border-none">
-          <div className="w-full h-full flex items-center bg-[#535353]">
-            <InfiniteMenu />
-          </div>
+        <Section id="skills" title="Technical_Arsenal" height="min-h-auto" className="bg-[#535353] border-none py-8">
+          <SkillDock />
         </Section>
 
         <Section id="contact" title="Connect_Signal">
