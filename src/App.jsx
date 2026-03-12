@@ -12,6 +12,7 @@ import FooterBlur from './components/layout/FooterBlur';
 import ChromeDinoGame from './components/hero/ChromeDinoGame';
 import SplashScreen from './components/ui/SplashScreen';
 import MobileHero from './components/hero/MobileHero';
+import MobileBanner from './components/ui/MobileBanner';
 
 const Section = ({ id, title, height = "min-h-screen", children, className = "" }) => (
   <section id={id} className={`w-full ${height} flex flex-col items-center justify-center relative border-b-2 border-dashed border-[#535353]/20 dark:border-[#f7f7f7]/20 ${className}`}>
@@ -78,7 +79,7 @@ function App() {
 
         </section>
 
-        <Section id="projects" title="Featured_Projects" height="min-h-auto" className="pt-16 md:pt-24">
+        <Section id="projects" title="Featured_Projects" height="min-h-auto" className="pt-24 md:pt-32 scroll-mt-24">
           <ScrollStack />
         </Section>
 
@@ -91,6 +92,7 @@ function App() {
         </Section>
 
         <FooterBlur />
+        <MobileBanner />
       </Layout>
     </ThemeProvider>
   );

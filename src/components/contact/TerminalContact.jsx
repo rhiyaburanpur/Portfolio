@@ -49,10 +49,11 @@ const TerminalContact = () => {
 
         ls: () => [
             { type: 'output', text: '> FEATURED_PROJECTS/' },
-            { type: 'output', text: '  01. VolunEra    [PYTHON/AI]' },
-            { type: 'output', text: '  02. KontoFlow   [PYTHON/CLOUD/SQLLITE]' },
-            { type: 'output', text: '  03. Go-Distributed-Crawler   [GOLANG/DOCKER]' },
-            { type: 'output', text: '  04. PDF2Quiz  [STREAMLIT/HUGGINGFACE]' },
+            { type: 'output', text: '  01. KubeWhisper [GO/PYTHON/K8S]' },
+            { type: 'output', text: '  02. VolunEra    [PYTHON/AI]' },
+            { type: 'output', text: '  03. KontoFlow   [PYTHON/CLOUD/SQLLITE]' },
+            { type: 'output', text: '  04. Go-Distributed-Crawler   [GOLANG/DOCKER]' },
+            { type: 'output', text: '  05. PDF2Quiz  [STREAMLIT/HUGGINGFACE]' },
             { type: 'output', text: '' },
         ],
 
