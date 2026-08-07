@@ -43,6 +43,29 @@ const projects = [
     }
 ];
 
+// Pixel Art SVG Icons (8-bit style)
+const PixelArrowLeft = ({ className = "w-6 h-6" }) => (
+    <svg viewBox="0 0 16 16" className={className} fill="currentColor" shapeRendering="crispEdges">
+        <rect x="7" y="2" width="2" height="2" />
+        <rect x="5" y="4" width="2" height="2" />
+        <rect x="3" y="6" width="2" height="4" />
+        <rect x="5" y="10" width="2" height="2" />
+        <rect x="7" y="12" width="2" height="2" />
+        <rect x="7" y="7" width="7" height="2" />
+    </svg>
+);
+
+const PixelArrowRight = ({ className = "w-6 h-6" }) => (
+    <svg viewBox="0 0 16 16" className={className} fill="currentColor" shapeRendering="crispEdges">
+        <rect x="7" y="2" width="2" height="2" />
+        <rect x="9" y="4" width="2" height="2" />
+        <rect x="11" y="6" width="2" height="4" />
+        <rect x="9" y="10" width="2" height="2" />
+        <rect x="7" y="12" width="2" height="2" />
+        <rect x="2" y="7" width="7" height="2" />
+    </svg>
+);
+
 const Card = ({ project, index }) => {
     return (
         <div
@@ -84,6 +107,20 @@ const ScrollStack = () => {
     const containerRef = useRef(null);
     const cardRefs = useRef([]);
     const visibleCards = useRef(new Set());
+
+    const scrollLeft = () => {
+        if (containerRef.current) {
+            const cardWidth = containerRef.current.querySelector('[data-index]')?.clientWidth || 600;
+            containerRef.current.scrollBy({ left: -(cardWidth + 16), behavior: 'smooth' });
+        }
+    };
+
+    const scrollRight = () => {
+        if (containerRef.current) {
+            const cardWidth = containerRef.current.querySelector('[data-index]')?.clientWidth || 600;
+            containerRef.current.scrollBy({ left: cardWidth + 16, behavior: 'smooth' });
+        }
+    };
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -128,27 +165,50 @@ const ScrollStack = () => {
     return (
         <div className="w-full relative py-10 md:py-20 overflow-hidden">
             <div className="font-['Press_Start_2P'] text-center text-[#535353] dark:text-[#f7f7f7] mb-4 text-[8px] sm:text-xs md:text-sm opacity-50 px-4">
-                SWIPE_TO_DECRYPT_PROJECTS()
+                SWIPE_OR_USE_ARROWS_TO_DECRYPT_PROJECTS()
             </div>
 
-            <div
-                ref={containerRef}
-                className="flex flex-row overflow-x-auto snap-x snap-mandatory scroll-smooth px-[10px] md:px-[15px] scroll-pl-[10px] md:scroll-pl-[15px] pb-8 gap-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] items-stretch"
-                style={{ WebkitOverflowScrolling: 'touch' }}
-            >
-                {projects.map((p, i) => (
-                    <div
-                        key={i}
-                        ref={el => cardRefs.current[i] = el}
-                        data-index={i}
-                        className="snap-start shrink-0 flex"
-                    >
-                        <Card project={p} index={i} />
-                    </div>
-                ))}
+            <div className="relative max-w-[1400px] mx-auto">
+                {/* Left 8-bit Pixel Arrow Button (Desktop / Laptop only) */}
+                <button
+                    onClick={scrollLeft}
+                    disabled={activeIndex === 0}
+                    aria-label="Previous project"
+                    className="hidden md:flex absolute left-2 lg:left-6 top-1/2 -translate-y-1/2 z-20 items-center justify-center p-3 bg-[#f7f7f7] dark:bg-[#2a2a2a] border-2 md:border-3 border-[#535353] dark:border-[#f7f7f7]/40 text-[#535353] dark:text-[#f7f7f7] shadow-[4px_4px_0px_#535353] dark:shadow-[4px_4px_0px_#f7f7f7]/20 hover:bg-[#535353] hover:text-[#f7f7f7] dark:hover:bg-[#f7f7f7] dark:hover:text-[#2a2a2a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_#535353] dark:active:shadow-[2px_2px_0px_#f7f7f7]/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
+                >
+                    <PixelArrowLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+                </button>
+
+                {/* Right 8-bit Pixel Arrow Button (Desktop / Laptop only) */}
+                <button
+                    onClick={scrollRight}
+                    disabled={activeIndex === projects.length - 1}
+                    aria-label="Next project"
+                    className="hidden md:flex absolute right-2 lg:right-6 top-1/2 -translate-y-1/2 z-20 items-center justify-center p-3 bg-[#f7f7f7] dark:bg-[#2a2a2a] border-2 md:border-3 border-[#535353] dark:border-[#f7f7f7]/40 text-[#535353] dark:text-[#f7f7f7] shadow-[4px_4px_0px_#535353] dark:shadow-[4px_4px_0px_#f7f7f7]/20 hover:bg-[#535353] hover:text-[#f7f7f7] dark:hover:bg-[#f7f7f7] dark:hover:text-[#2a2a2a] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_#535353] dark:active:shadow-[2px_2px_0px_#f7f7f7]/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
+                >
+                    <PixelArrowRight className="w-6 h-6 sm:w-7 sm:h-7" />
+                </button>
+
+                {/* Project cards scroll container */}
+                <div
+                    ref={containerRef}
+                    className="flex flex-row overflow-x-auto snap-x snap-mandatory scroll-smooth px-[10px] md:px-[60px] lg:px-[80px] scroll-pl-[10px] md:scroll-pl-[60px] lg:scroll-pl-[80px] pb-8 gap-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] items-stretch"
+                    style={{ WebkitOverflowScrolling: 'touch' }}
+                >
+                    {projects.map((p, i) => (
+                        <div
+                            key={i}
+                            ref={el => cardRefs.current[i] = el}
+                            data-index={i}
+                            className="snap-start shrink-0 flex"
+                        >
+                            <Card project={p} index={i} />
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            <div className="flex lg:hidden justify-center items-center gap-3 mt-4">
+            <div className="flex justify-center items-center gap-3 mt-4">
                 {projects.map((_, i) => (
                     <div
                         key={i}
@@ -165,3 +225,7 @@ const ScrollStack = () => {
 };
 
 export default ScrollStack;
+
+
+
+
