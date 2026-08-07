@@ -152,13 +152,14 @@ const ScrollStack = () => {
         );
 
         const currentCards = cardRefs.current;
+        const currentVisible = visibleCards.current;
         currentCards.forEach((card) => {
             if (card) observer.observe(card);
         });
 
         return () => {
             observer.disconnect();
-            visibleCards.current.clear();
+            currentVisible.clear();
         };
     }, []);
 
